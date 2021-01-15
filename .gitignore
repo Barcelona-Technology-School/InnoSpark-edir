@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+#Ignoring the data
+ML*first*attempt/ocular-disease/
+ML*first*attempt/ocular-disease-recognition-odir5k.zip
