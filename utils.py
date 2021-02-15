@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from random import sample
+from sklearn.preprocessing import OneHotEncoder
 
 class DataFetch(object):
 
@@ -147,6 +148,11 @@ class DataFetch(object):
 
         return images
 
+    def _hot_Encoder(self, y):
+        cat_encoder = OneHotEncoder(sparse=False)
+        housing_cat_1hot = cat_encoder.fit_transform(y)
+
+        return housing_cat_1hot
 
     def load_DR(self, row, col):
         #Folder, Disease, CsvFileName, column in Csv, folder with images
@@ -237,3 +243,51 @@ class DataFetch(object):
         X = X/255.0
 
         return X
+
+    # def load_multiple(self, row, col):
+    #     sources = np.array([['Kaggle','glaucoma','full_df.csv', 'filename', 'preprocessed_images'],
+    #                         ['Kaggle','DR','full_df.csv', 'filename', 'preprocessed_images'],
+    #                         ['Kaggle','cataracts','full_df.csv', 'filename', 'preprocessed_images']])
+    #     images=[]
+    #     for source in sources:
+    #
+    #         folder = source[0]
+    #         file_name = source[2]
+    #         csv_path = self._get_csv_path(folder, file_name)#GET PATH OF csv
+    #         df = pd.read_csv(csv_path)#READ CSV
+    #         file_names = self._get_file_names(source[0], source[1], df, source[3])#GET FILE NAMES
+    #         path = os.path.join('Datasets',source[0],source[4])
+    #         image_data = self._read_images(path, file_names, row, col)
+    #         #print(image_data.shape)
+    #         images.append(image_data)
+    #
+    #     images_all = np.concatenate((images[0],images[1], images[2]),axis=0)
+    #
+    #     return images_all
+
+    def load_multiple(self,size):
+        folder =  'Kaggle'
+        file_name = 'full_df.csv'
+        csv_path = self._get_csv_path(folder, file_name)#GET PATH OF csv
+        df_csv = pd.read_csv(csv_path)#READ CSV
+        diseases=np.array([['dr','diabe', 'D'],
+                    ['cat', 'cata',  'C'],
+                    ['glau','glauc', 'G'],
+                    ['nor','normal', 'N']])
+        df_final=pd.DataFrame()
+        for dis in diseases:
+
+            df_l = df_csv.loc[(df_csv['Left-Diagnostic Keywords'].str.contains(dis[1]) & df_csv[dis[2]]==1),['Left-Fundus']]
+            df_l.rename(columns={'Left-Fundus':'filename'}, inplace=True)
+            df_r = df_csv.loc[(df_csv['Right-Diagnostic Keywords'].str.contains(dis[1]) & df_csv[dis[2]]==1),['Right-Fundus']]
+            df_r.rename(columns={'Right-Fundus':'filename'}, inplace=True)
+            df = df_l.append(df_r, ignore_index=True)
+            df['y'] = dis[2]
+            df_final = pd.concat([df_final,df])
+
+        path = os.path.join('Datasets','Kaggle','preprocessed_images')
+        x = self._read_images(path,df_final['filename'],size,size)
+        y = self._hot_Encoder(df_final[['y']])
+        #df_final['yarr']=y
+
+        return df_final,x,y
