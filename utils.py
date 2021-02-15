@@ -108,6 +108,7 @@ class DataFetch(object):
     def _read_images(self, path, file_names, row, col):
 
         image_data = []
+        noread = []
 
         for image_name in tqdm(file_names):
         #for image_name in file_names:
@@ -122,12 +123,13 @@ class DataFetch(object):
                 image_data.append(image)
 
             except:
-
+                noread.append(image_name)
                 continue
 
         image_data = np.array(image_data)
+        noread = np.array(noread)
 
-        return image_data
+        return image_data, noread
 
     def save_images(self,filename, images):
         path = os.path.join('Datasets',filename)
@@ -171,7 +173,7 @@ class DataFetch(object):
             file_names = self._get_file_names(source[0], source[1], df, source[3])#GET FILE NAMES
             #file_names_total, labels = self._append_normal(file_names)
             path = os.path.join('Datasets',source[0],source[4])
-            image_data = self._read_images(path, file_names, row, col)
+            image_data, noread = self._read_images(path, file_names, row, col)
             #print(image_data.shape)
             images.append(image_data)
 
@@ -196,7 +198,7 @@ class DataFetch(object):
             df = pd.read_csv(csv_path)#READ CSV
             file_names = self._get_file_names(source[0], source[1], df, source[3])#GET FILE NAMES
             path = os.path.join('Datasets',source[0],source[4])
-            image_data = self._read_images(path, file_names, row, col)
+            image_data, noread = self._read_images(path, file_names, row, col)
             #print(image_data.shape)
             images.append(image_data)
 
@@ -221,7 +223,7 @@ class DataFetch(object):
             df = pd.read_csv(csv_path)#READ CSV
             file_names = self._get_file_names(source[0], source[1], df, source[3])#GET FILE NAMES
             path = os.path.join('Datasets',source[0],source[4])
-            image_data = self._read_images(path, file_names, row, col)
+            image_data, noread = self._read_images(path, file_names, row, col)
             #print(image_data.shape)
             images.append(image_data)
 
@@ -286,8 +288,11 @@ class DataFetch(object):
             df_final = pd.concat([df_final,df])
 
         path = os.path.join('Datasets','Kaggle','preprocessed_images')
-        x = self._read_images(path,df_final['filename'],size,size)
-        y = self._hot_Encoder(df_final[['y']])
+        df_final.drop_duplicates(inplace=True)
+        x, noread = self._read_images(path,df_final['filename'],size,size)
+        #df_final.drop(noread, axis=0)
+        df_final2 = df_final.loc[~df_final['filename'].isin(noread)]
+        y = self._hot_Encoder(df_final2[['y']])
         #df_final['yarr']=y
 
-        return df_final,x,y
+        return df_final2,x,y
