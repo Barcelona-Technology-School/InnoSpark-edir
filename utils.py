@@ -64,18 +64,6 @@ class DataFetch(object):
 
         return file_names
 
-    # def _append_normal(self, file_names):
-    #     labels = [1] * len(file_names)
-    #     normal=[]
-    #     file_names_total=[]
-    #     left_eye=df_csv[(df_csv['Left-Diagnostic Keywords'].str.contains('normal') & df_csv['N']==1)]['filename'].values
-    #     right_eye=df_csv[(df_csv['Right-Diagnostic Keywords'].str.contains('normal') & df_csv['N']==1)]['filename'].values
-    #     normal = np.concatenate((left_eye,right_eye),axis=0)
-    #     normale_labels = [0] * len(normal)
-    #     labels = np.concatenate((labels,normale_labels),axis=0)
-    #     file_names_total = np.concatenate((file_names,normal),axis=0)
-    #     return file_names_total, labels
-
     def _append_normal(self, images, labels):
         #labels = [1] * len(file_names)
         normal=[]
@@ -173,15 +161,16 @@ class DataFetch(object):
             file_names = self._get_file_names(source[0], source[1], df, source[3])#GET FILE NAMES
             #file_names_total, labels = self._append_normal(file_names)
             path = os.path.join('Datasets',source[0],source[4])
-            image_data, noread = self._read_images(path, file_names, row, col)
+            image_data = self._read_images(path, file_names, row, col)
             #print(image_data.shape)
             images.append(image_data)
 
         images_dr = np.concatenate((images[0],images[1]),axis=0)
-        labels_dr = [1] * len(images_dr)
-        images_balanced, labels_balanced = self._append_normal(images_dr, labels_dr)
-        #return images_dr, labels_dr
-        return images_balanced, labels_balanced
+        #labels_dr = [1] * len(images_dr)
+        #images_balanced, labels_balanced = self._append_normal(images_dr, labels_dr)
+        
+        #return images_balanced, labels_balanced
+        return images_dr
 
     def load_Cataracts(self, row, col):
         #Folder, Disease, CsvFileName, column in Csv, folder with images
@@ -198,15 +187,16 @@ class DataFetch(object):
             df = pd.read_csv(csv_path)#READ CSV
             file_names = self._get_file_names(source[0], source[1], df, source[3])#GET FILE NAMES
             path = os.path.join('Datasets',source[0],source[4])
-            image_data, noread = self._read_images(path, file_names, row, col)
+            image_data = self._read_images(path, file_names, row, col)
             #print(image_data.shape)
             images.append(image_data)
 
         images_cat = np.concatenate((images[0],images[1]),axis=0)
-        labels_cat = [1] * len(images_cat)
-        images_balanced, labels_balanced = self._append_normal(images_cat, labels_cat)
+        #labels_cat = [1] * len(images_cat)
+        #images_balanced, labels_balanced = self._append_normal(images_cat, labels_cat)
 
-        return images_balanced, labels_balanced
+        #return images_balanced, labels_balanced
+        return images_cat
 
     def load_Glaucoma(self, row, col):
         #Folder, Disease, CsvFileName, column in Csv, folder with images
@@ -223,15 +213,16 @@ class DataFetch(object):
             df = pd.read_csv(csv_path)#READ CSV
             file_names = self._get_file_names(source[0], source[1], df, source[3])#GET FILE NAMES
             path = os.path.join('Datasets',source[0],source[4])
-            image_data, noread = self._read_images(path, file_names, row, col)
+            image_data = self._read_images(path, file_names, row, col)
             #print(image_data.shape)
             images.append(image_data)
 
         images_glau = np.concatenate((images[0],images[1]),axis=0)
-        labels_glau = [1] * len(images_glau)
-        images_balanced, labels_balanced = self._append_normal(images_glau, labels_glau)
+        #labels_glau = [1] * len(images_glau)
+        #images_balanced, labels_balanced = self._append_normal(images_glau, labels_glau)
 
-        return images_balanced, labels_balanced
+        #return images_balanced, labels_balanced
+        return images_glau
 
     def load_catAnt(self):
         folder = 'Kaggle-Anterior'
@@ -246,53 +237,95 @@ class DataFetch(object):
 
         return X
 
-    # def load_multiple(self, row, col):
-    #     sources = np.array([['Kaggle','glaucoma','full_df.csv', 'filename', 'preprocessed_images'],
-    #                         ['Kaggle','DR','full_df.csv', 'filename', 'preprocessed_images'],
-    #                         ['Kaggle','cataracts','full_df.csv', 'filename', 'preprocessed_images']])
-    #     images=[]
-    #     for source in sources:
-    #
-    #         folder = source[0]
-    #         file_name = source[2]
-    #         csv_path = self._get_csv_path(folder, file_name)#GET PATH OF csv
-    #         df = pd.read_csv(csv_path)#READ CSV
-    #         file_names = self._get_file_names(source[0], source[1], df, source[3])#GET FILE NAMES
-    #         path = os.path.join('Datasets',source[0],source[4])
-    #         image_data = self._read_images(path, file_names, row, col)
-    #         #print(image_data.shape)
-    #         images.append(image_data)
-    #
-    #     images_all = np.concatenate((images[0],images[1], images[2]),axis=0)
-    #
-    #     return images_all
+    # def load_multiple(self,size):
+    #     folder =  'Kaggle'
+    #     file_name = 'full_df.csv'
+    #     csv_path = self._get_csv_path(folder, file_name)#GET PATH OF csv
+    #     df_csv = pd.read_csv(csv_path)#READ CSV
+    #     diseases=np.array([['dr','retino', 'D'],
+    #                 ['cat', 'cata',  'C'],
+    #                 ['glau','glauc', 'G'],
+    #                 ['nor','normal', 'N']])
+    #     df_final=pd.DataFrame()
+    #     for dis in diseases:
+
+    #         df = df_csv.loc[(df_csv['labels'].str.contains(dis[2])),['filename']]
+    #         df['y'] = dis[2]
+    #         df_final = pd.concat([df_final,df])
+
+    #     path = os.path.join('Datasets','Kaggle','preprocessed_images')
+    #     df_final.drop_duplicates(inplace=True)
+    #     x = self._read_images(path,df_final['filename'],size,size)
+    #     y = self._hot_Encoder(df_final[['y']])
+
+    #     return df_final,x,y
+
 
     def load_multiple(self,size):
+        df_final=pd.DataFrame()
+        images = []
+        #CATARACT
+        df_cat=pd.DataFrame()
+        cat = ['Kaggle2','cataracts','kaggle2Cataract.csv','name','2_cataract']
+        csv_path = self._get_csv_path(cat[0], cat[2])#GET PATH OF csv
+        df = pd.read_csv(csv_path)#READ CSV
+        file_names = self._get_file_names(cat[0], cat[1], df, cat[3])#GET FILE NAMES
+        path = os.path.join('Datasets',cat[0],cat[4])
+        image_cat, noread = self._read_images(path, file_names, size, size)
+        df_cat['filename'] = file_names
+        df_cat['label'] = 'C'
+        images.append(image_cat)
+        df_final = pd.concat([df_final,df_cat])
+        #DR
+        df_dr=pd.DataFrame()
+        dr = ['8-Messidor','DR','messidor_data.csv','image_id','DR']
+        csv_path = self._get_csv_path(dr[0], dr[2])#GET PATH OF csv
+        df = pd.read_csv(csv_path)#READ CSV
+        file_names = self._get_file_names(dr[0], dr[1], df, dr[3])#GET FILE NAMES
+        path = os.path.join('Datasets',dr[0],dr[4])
+        image_dr, noread = self._read_images(path, file_names, size, size)
+        df_dr['filename'] = file_names
+        df_dr = df_dr[~df_dr['filename'].isin(noread)]
+        df_dr['label'] = 'D'
+        images.append(image_dr)
+        df_final = pd.concat([df_final,df_dr])
+        #GLAUCOMA
+        df_gl=pd.DataFrame()
+        glau = ['ORIGA','glaucoma','imgNamesORIGA.csv','New names','glaucoma']
+        csv_path = self._get_csv_path(glau[0], glau[2])#GET PATH OF csv
+        df = pd.read_csv(csv_path)#READ CSV
+        file_names = self._get_file_names(glau[0], glau[1], df, glau[3])#GET FILE NAMES
+        path = os.path.join('Datasets',glau[0],glau[4])
+        image_glau, noread = self._read_images(path, file_names, size, size)
+        df_gl['filename'] = file_names
+        df_gl = df_gl[~df_gl['filename'].isin(noread)]
+        df_gl['label'] = 'G'
+        images.append(image_glau)
+        df_final = pd.concat([df_final,df_gl])
+
+        #LOAD FROM Kaggle5k DATASET
         folder =  'Kaggle'
         file_name = 'full_df.csv'
         csv_path = self._get_csv_path(folder, file_name)#GET PATH OF csv
         df_csv = pd.read_csv(csv_path)#READ CSV
-        diseases=np.array([['dr','diabe', 'D'],
-                    ['cat', 'cata',  'C'],
-                    ['glau','glauc', 'G'],
-                    ['nor','normal', 'N']])
-        df_final=pd.DataFrame()
+        diseases=np.array(['D','C','G','A','H','M','O','N'])
+        df_k2=pd.DataFrame()
         for dis in diseases:
 
-            df_l = df_csv.loc[(df_csv['Left-Diagnostic Keywords'].str.contains(dis[1]) & df_csv[dis[2]]==1),['Left-Fundus']]
-            df_l.rename(columns={'Left-Fundus':'filename'}, inplace=True)
-            df_r = df_csv.loc[(df_csv['Right-Diagnostic Keywords'].str.contains(dis[1]) & df_csv[dis[2]]==1),['Right-Fundus']]
-            df_r.rename(columns={'Right-Fundus':'filename'}, inplace=True)
-            df = df_l.append(df_r, ignore_index=True)
-            df['y'] = dis[2]
-            df_final = pd.concat([df_final,df])
+            df_k = df_csv.loc[(df_csv['labels'].str.contains(dis)),['filename']]
+            df_k['label'] = dis
+            df_k2 = pd.concat([df_k2,df_k])
 
         path = os.path.join('Datasets','Kaggle','preprocessed_images')
-        df_final.drop_duplicates(inplace=True)
-        x, noread = self._read_images(path,df_final['filename'],size,size)
-        #df_final.drop(noread, axis=0)
-        df_final2 = df_final.loc[~df_final['filename'].isin(noread)]
-        y = self._hot_Encoder(df_final2[['y']])
-        #df_final['yarr']=y
+        df_k2.drop_duplicates(inplace=True)
+        image_k, noread = self._read_images(path,df_k2['filename'],size,size)
+        images.append(image_k)
+        images_final = np.concatenate((images[0],images[1],images[2],images[3]),axis=0)
+        df_final = pd.concat([df_final,df_k2])
+        y = self._hot_Encoder(df_final[['label']])
+        #df_labels = pd.DataFrame(y.astype(int), columns=['A','C','D','G','H','M','N','O'])
+        #df_final = pd.concat([df_final.reset_index(drop=True), df_labels], axis=1)
+        df_final['x'] = images_final.tolist()
+        df_final['y'] = y.astype(int).tolist()
 
-        return df_final2,x,y
+        return df_final.reset_index(drop=True),images_final,y
