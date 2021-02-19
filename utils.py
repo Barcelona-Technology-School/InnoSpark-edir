@@ -86,7 +86,7 @@ class DataFetch(object):
             file_names_normal = sample(file_names_normal.tolist(), len(images))
         #else:
             #file_names_normal = sample(file_names_normal, len(images))
-        normal = self._read_images(os.path.join('Datasets','Kaggle','preprocessed_images'), file_names_normal, height, width)
+        normal, noread = self._read_images(os.path.join('Datasets','Kaggle','preprocessed_images'), file_names_normal, height, width)
         images_total = np.concatenate((images, normal), axis=0)
         normal_labels = [0] * len(normal)
         labels = np.concatenate((labels,normal_labels),axis=0)
@@ -107,7 +107,7 @@ class DataFetch(object):
                 #print(os.path.join(path,image_name))
                 image = cv2.imread(os.path.join(path,image_name))
                 image = cv2.resize(image,(row,col))
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 image_data.append(image)
 
             except:
@@ -161,16 +161,16 @@ class DataFetch(object):
             file_names = self._get_file_names(source[0], source[1], df, source[3])#GET FILE NAMES
             #file_names_total, labels = self._append_normal(file_names)
             path = os.path.join('Datasets',source[0],source[4])
-            image_data = self._read_images(path, file_names, row, col)
+            image_data, noread = self._read_images(path, file_names, row, col)
             #print(image_data.shape)
             images.append(image_data)
 
         images_dr = np.concatenate((images[0],images[1]),axis=0)
-        #labels_dr = [1] * len(images_dr)
-        #images_balanced, labels_balanced = self._append_normal(images_dr, labels_dr)
+        labels_dr = [1] * len(images_dr)
+        images_balanced, labels_balanced = self._append_normal(images_dr, labels_dr)
         
-        #return images_balanced, labels_balanced
-        return images_dr
+        return images_balanced, labels_balanced
+        #return images_dr
 
     def load_Cataracts(self, row, col):
         #Folder, Disease, CsvFileName, column in Csv, folder with images
@@ -187,16 +187,16 @@ class DataFetch(object):
             df = pd.read_csv(csv_path)#READ CSV
             file_names = self._get_file_names(source[0], source[1], df, source[3])#GET FILE NAMES
             path = os.path.join('Datasets',source[0],source[4])
-            image_data = self._read_images(path, file_names, row, col)
+            image_data, noread = self._read_images(path, file_names, row, col)
             #print(image_data.shape)
             images.append(image_data)
 
         images_cat = np.concatenate((images[0],images[1]),axis=0)
-        #labels_cat = [1] * len(images_cat)
-        #images_balanced, labels_balanced = self._append_normal(images_cat, labels_cat)
+        labels_cat = [1] * len(images_cat)
+        images_balanced, labels_balanced = self._append_normal(images_cat, labels_cat)
 
-        #return images_balanced, labels_balanced
-        return images_cat
+        return images_balanced, labels_balanced
+        #return images_cat
 
     def load_Glaucoma(self, row, col):
         #Folder, Disease, CsvFileName, column in Csv, folder with images
@@ -213,16 +213,16 @@ class DataFetch(object):
             df = pd.read_csv(csv_path)#READ CSV
             file_names = self._get_file_names(source[0], source[1], df, source[3])#GET FILE NAMES
             path = os.path.join('Datasets',source[0],source[4])
-            image_data = self._read_images(path, file_names, row, col)
+            image_data, noread = self._read_images(path, file_names, row, col)
             #print(image_data.shape)
             images.append(image_data)
 
         images_glau = np.concatenate((images[0],images[1]),axis=0)
-        #labels_glau = [1] * len(images_glau)
-        #images_balanced, labels_balanced = self._append_normal(images_glau, labels_glau)
+        labels_glau = [1] * len(images_glau)
+        images_balanced, labels_balanced = self._append_normal(images_glau, labels_glau)
 
-        #return images_balanced, labels_balanced
-        return images_glau
+        return images_balanced, labels_balanced
+        #return images_glau
 
     def load_catAnt(self):
         folder = 'Kaggle-Anterior'
@@ -322,10 +322,10 @@ class DataFetch(object):
         images.append(image_k)
         images_final = np.concatenate((images[0],images[1],images[2],images[3]),axis=0)
         df_final = pd.concat([df_final,df_k2])
-        y = self._hot_Encoder(df_final[['label']])
+        y = self._hot_Encoder(df_final[['label']])#.tolist()
         #df_labels = pd.DataFrame(y.astype(int), columns=['A','C','D','G','H','M','N','O'])
         #df_final = pd.concat([df_final.reset_index(drop=True), df_labels], axis=1)
-        df_final['x'] = images_final.tolist()
+        #df_final['x'] = images_final.tolist()
         df_final['y'] = y.astype(int).tolist()
 
-        return df_final.reset_index(drop=True),images_final,y
+        return df_final.reset_index(drop=True),images_final,y.tolist()
